@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-page: #F5ECD7;
+    --text-primary: #1A1A1A;
+    --text-meta: #7B5E3A;
+    --text-muted: #A07840;
+    --border-input: #C8A87A;
+    --color-random-thoughts: #E8A87C;
+    --color-school: #F9E4A0;
+    --color-personal: #8FBCBC;
+    --color-drama: #C8D5A8;
+    --border-random-thoughts: #D4946A;
+    --border-school: #E8CC78;
+    --border-personal: #7AABAB;
+    --border-drama: #B4C490;
+
+    --background: 42 56% 90%;
+    --foreground: 0 0% 10%;
+    --card: 42 56% 90%;
+    --card-foreground: 0 0% 10%;
+    --popover: 40 100% 95%;
+    --popover-foreground: 0 0% 10%;
+    --primary: 33 35% 35%;
+    --primary-foreground: 42 56% 90%;
+    --secondary: 39 52% 82%;
+    --secondary-foreground: 33 35% 35%;
+    --muted: 39 52% 82%;
+    --muted-foreground: 33 42% 44%;
+    --accent: 39 52% 82%;
+    --accent-foreground: 33 35% 35%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 35 39% 63%;
+    --input: 35 39% 63%;
+    --ring: 35 39% 63%;
+    --radius: 1rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    min-height: 100%;
+    background: var(--bg-page);
+  }
+
+  body {
+    min-height: 100%;
+    background:
+      radial-gradient(circle at top left, rgba(232, 168, 124, 0.24), transparent 34rem),
+      radial-gradient(circle at bottom right, rgba(143, 188, 188, 0.18), transparent 28rem),
+      var(--bg-page);
+    color: var(--text-primary);
+  }
+
+  ::selection {
+    background: rgba(232, 168, 124, 0.45);
+  }
+}
+
+@layer utilities {
+  .line-clamp-4 {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
