@@ -9,6 +9,19 @@ A warm, Figma-driven notes-taking app built for a 72-hour hiring challenge with 
 - Local runtime: Docker Compose
 - Workflow: `development` integration branch, `main` final/release branch, PR-based delivery, GitHub Actions CI
 
+## Demo Account
+
+Docker startup automatically seeds a persistent demo account, default categories, and realistic sample notes.
+
+```text
+DEMO_EMAIL=demo@example.com
+DEMO_PASSWORD=<set-a-local-demo-password>
+```
+
+Copy `backend/.env.example` to `backend/.env` and set `DEMO_PASSWORD` locally before starting Docker. The password is intentionally loaded from `.env` instead of being committed to source control.
+
+The seeded data persists across container restarts because PostgreSQL uses the `postgres_data` Docker volume. The seed command is idempotent, so restarting the backend will not duplicate demo notes.
+
 ## Why These Versions
 
 - **Next.js 15**: chosen instead of Next.js 14 because 15.x is currently the safer supported line for a 2026 challenge, while 14.x is no longer the right default.
@@ -22,6 +35,8 @@ A warm, Figma-driven notes-taking app built for a 72-hour hiring challenge with 
 ### Docker
 
 ```bash
+cp backend/.env.example backend/.env
+# Edit backend/.env and set DEMO_PASSWORD before starting the stack.
 docker-compose up --build
 ```
 
@@ -30,15 +45,19 @@ Then open:
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8000/api
 
+The backend entrypoint runs migrations and `python manage.py seed_demo_data` on every container start.
+
 ### Backend Only
 
 ```bash
 cd backend
 python -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
 cp .env.example .env
+# Edit .env and set DEMO_PASSWORD before seeding demo data.
 python manage.py migrate
+python manage.py seed_demo_data
 python manage.py runserver
 ```
 
@@ -99,16 +118,55 @@ Recommended branch protection settings for a team:
 
 ## Validation
 
-```bash
-# Backend
-cd backend
-python manage.py test
+### Backend Unit Tests and Coverage
 
-# Frontend
+```bash
+cd backend
+pip install -r requirements-dev.txt
+pytest --cov=notes --cov-report=term-missing --cov-fail-under=80
+```
+
+### Frontend Checks
+
+```bash
 cd frontend
 npm run lint
 npm run typecheck
 npm run build
+```
+
+### Playwright E2E Tests
+
+Start the Docker stack first so the backend, frontend, PostgreSQL, and seeded demo user are available:
+
+```bash
+cp backend/.env.example backend/.env
+# Edit backend/.env and set DEMO_PASSWORD before starting the stack.
+docker-compose up --build
+```
+
+Export the same demo credentials for Playwright:
+
+```bash
+export DEMO_EMAIL=demo@example.com
+export DEMO_PASSWORD="$(grep '^DEMO_PASSWORD=' backend/.env | cut -d= -f2-)"
+```
+
+Then run:
+
+```bash
+cd frontend
+npm test
+# or
+npx playwright test
+```
+
+Useful Playwright commands:
+
+```bash
+npm run test:e2e
+npm run test:e2e:ui
+PLAYWRIGHT_BROWSERS_PATH=.cache/ms-playwright npx playwright install chromium
 ```
 
 ## AI Tools Used

@@ -9,6 +9,8 @@ export default function SignupPage() {
       footerText="Already have an account?"
       footerHref="/auth/login"
       footerLabel="We're already friends!"
+      imageWidth={189}
+      imageHeight={134}
       imageClassName="w-[128px]"
     >
       <AuthForm mode="signup" />

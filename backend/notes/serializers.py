@@ -3,15 +3,10 @@ from django.db import transaction
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from .defaults import DEFAULT_CATEGORIES
 from .models import Category, Note
 
 User = get_user_model()
-
-DEFAULT_CATEGORIES = [
-    {'name': 'Random Thoughts', 'color': '#E8A87C'},
-    {'name': 'School', 'color': '#F9E4A0'},
-    {'name': 'Personal', 'color': '#8FBCBC'},
-]
 
 
 def tokens_for_user(user):

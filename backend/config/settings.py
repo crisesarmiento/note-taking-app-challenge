@@ -51,7 +51,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-DATABASE_URL = config('DATABASE_URL', default='postgresql://notes:notes@localhost:5432/notes')
+DATABASE_URL = config('DATABASE_URL', default='sqlite')
 
 if DATABASE_URL.startswith('postgresql://'):
     from urllib.parse import urlparse

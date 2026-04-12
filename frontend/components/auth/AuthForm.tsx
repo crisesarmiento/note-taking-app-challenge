@@ -1,6 +1,6 @@
 'use client'
 
-import { FormEvent, useState } from 'react'
+import { FormEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { PasswordInput } from '@/components/auth/PasswordInput'
@@ -19,6 +19,11 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isHydrated, setIsHydrated] = useState(false)
+
+  useEffect(() => {
+    setIsHydrated(true)
+  }, [])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -68,7 +73,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         />
       </div>
       {error ? <p className="rounded-2xl border border-borderTan bg-[#fff7e8] px-4 py-3 text-left text-sm text-textMeta">{error}</p> : null}
-      <Button className="h-11 w-full" type="submit" disabled={isSubmitting}>
+      <Button className="h-11 w-full" type="submit" disabled={!isHydrated || isSubmitting}>
         {isSubmitting ? 'One moment...' : mode === 'signup' ? 'Sign Up' : 'Login'}
       </Button>
     </form>

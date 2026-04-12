@@ -43,11 +43,11 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-          cache-dependency-path: backend/requirements.txt
+          cache-dependency-path: backend/requirements-dev.txt
       - run: python -m pip install --upgrade pip
-      - run: pip install -r requirements.txt
+      - run: pip install -r requirements-dev.txt
       - run: python manage.py check
-      - run: python manage.py test
+      - run: pytest --cov=notes --cov-report=term-missing --cov-fail-under=80
 
   frontend:
     name: Frontend
@@ -68,3 +68,65 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run build
+
+  e2e:
+    name: Playwright E2E
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_API_URL: http://localhost:8000/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Install Playwright Chromium
+        working-directory: frontend
+        run: PLAYWRIGHT_BROWSERS_PATH=.cache/ms-playwright npx playwright install --with-deps chromium
+      - name: Prepare demo credentials
+        run: |
+          demo_password="$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9' | head -c 24)"
+          {
+            echo "DEMO_EMAIL=demo@example.com"
+            echo "DEMO_PASSWORD=$demo_password"
+          } >> "$GITHUB_ENV"
+          {
+            echo "DEMO_EMAIL=demo@example.com"
+            echo "DEMO_PASSWORD=$demo_password"
+          } > backend/.env
+      - name: Start Docker stack
+        run: docker compose up -d --build
+      - name: Wait for backend
+        run: |
+          for i in {1..60}; do
+            status=$(curl -sS -o /tmp/backend-health -w '%{http_code}' http://localhost:8000/api/categories/ || true)
+            if [ "$status" = "401" ] || [ "$status" = "200" ]; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose logs backend
+          exit 1
+      - name: Wait for frontend
+        run: |
+          for i in {1..60}; do
+            if curl -fsS http://localhost:3000/auth/login >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose logs frontend
+          exit 1
+      - name: Run Playwright tests
+        working-directory: frontend
+        run: npm run test:e2e
+      - name: Dump Docker logs on failure
+        if: failure()
+        run: docker compose logs
+      - name: Tear down Docker stack
+        if: always()
+        run: docker compose down -v
