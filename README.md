@@ -2,39 +2,22 @@
 
 A warm, Figma-driven notes-taking app built for a 72-hour hiring challenge with Django REST Framework and Next.js.
 
+## Quick Start
+
+```bash
+docker compose up --build
+```
+
+Open [http://localhost:3000](http://localhost:3000) and sign in with **demo@example.com** / **demo123**. No `.env` files or manual environment setup is required.
+
+The backend seeds the demo user, default categories, and sample notes on startup. Data persists in the `postgres_data` Docker volume between restarts.
+
 ## Stack
 
 - Backend: Python 3.12, Django 5.2 LTS, Django REST Framework, SimpleJWT, PostgreSQL
 - Frontend: Next.js 15, TypeScript, Tailwind CSS, shadcn/ui, Playfair Display, Inter
 - Local runtime: Docker Compose
 - Workflow: `development` integration branch, `main` final/release branch, PR-based delivery, GitHub Actions CI
-
-## Demo Account
-
-Docker startup automatically seeds a persistent demo account, default categories, and realistic sample notes.
-
-**Easy local demo:** `docker-compose.yml` sets `DEMO_PASSWORD` to **`demo123`** by default (via `DEMO_PASSWORD: ${DEMO_PASSWORD:-demo123}`). You do not need a `backend/.env` file for the stack to start; the backend, Playwright, and browser login all use that same value unless you override it.
-
-```text
-DEMO_EMAIL=demo@example.com
-DEMO_PASSWORD=demo123   # default in Docker Compose; export a different value to override
-```
-
-For a **custom** password, export it before `docker compose up` so Compose, the container, and your shell stay aligned (the `environment` block overrides `DEMO_PASSWORD` from `backend/.env`):
-
-```bash
-export DEMO_PASSWORD='your-secret'
-docker compose up --build
-```
-
-Copy `backend/.env.example` to `backend/.env` when you need extra backend-only settings; `DEMO_PASSWORD` there must not be the template placeholder `<set-a-local-demo-password>` (the seed command rejects it).
-
-The seeded data persists across container restarts because PostgreSQL uses the `postgres_data` Docker volume. The seed command is idempotent, so restarting the backend will not duplicate demo notes.
-
-### Troubleshooting demo login
-
-- **"Invalid email or password"** in the app almost always means the password you type does not match **`DEMO_PASSWORD`** in the backend environment. With Docker, that is **`demo123`** unless you overrode it when starting Compose.
-- **`seed_demo_data` fails** on the placeholder: edit `backend/.env` (or your environment) and set a real password.
 
 ## Why These Versions
 
@@ -46,23 +29,14 @@ The seeded data persists across container restarts because PostgreSQL uses the `
 
 ## Running Locally
 
-### Docker
-
-```bash
-docker compose up --build
-```
-
-Optional: `cp backend/.env.example backend/.env` if you use backend-only tools or extra env vars. For the default demo user you can rely on Compose's `demo123` password.
-
-
-Then open:
+Use **Quick Start** for the full stack. Reference URLs:
 
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8000/api
 
 The backend entrypoint runs migrations and `python manage.py seed_demo_data` on every container start.
 
-### Backend Only
+### Backend only (no Docker)
 
 ```bash
 cd backend
@@ -70,7 +44,6 @@ python -m venv venv
 source venv/bin/activate
 pip install -r requirements-dev.txt
 cp .env.example .env
-# .env.example includes DEMO_PASSWORD=demo123 for local seeding; change if needed.
 python manage.py migrate
 python manage.py seed_demo_data
 python manage.py runserver
@@ -152,32 +125,16 @@ npm run build
 
 ### Playwright E2E Tests
 
-Start the Docker stack first so the backend, frontend, PostgreSQL, and seeded demo user are available:
-
-```bash
-docker compose up --build
-```
-
-Playwright defaults to the same demo password as Docker (**`demo123`**). Override only if you changed `DEMO_PASSWORD` when starting Compose:
-
-```bash
-export DEMO_EMAIL=demo@example.com
-export DEMO_PASSWORD=demo123
-```
-
-Then run:
+With the Docker stack running (**Quick Start**), the tests use the same demo account (**demo@example.com** / **demo123**) by default.
 
 ```bash
 cd frontend
-npm test
-# or
-npx playwright test
+npm run test:e2e
 ```
 
-Useful Playwright commands:
+Other useful commands:
 
 ```bash
-npm run test:e2e
 npm run test:e2e:ui
 PLAYWRIGHT_BROWSERS_PATH=.cache/ms-playwright npx playwright install chromium
 ```

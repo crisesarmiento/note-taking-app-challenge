@@ -24,13 +24,11 @@ class Command(BaseCommand):
         if not demo_password:
             raise CommandError(
                 'DEMO_PASSWORD is required to seed the demo user. '
-                'With Docker Compose the default is demo123 unless you override it. '
-                'For backend-only runs, copy backend/.env.example to backend/.env and set a real password.'
+                'Docker Compose sets this automatically; for backend-only runs copy backend/.env.example to backend/.env.'
             )
         if is_invalid_demo_password_placeholder(demo_password):
             raise CommandError(
-                'DEMO_PASSWORD must be a real password, not the template placeholder from .env.example. '
-                'Remove the angle brackets and choose a value (Docker Compose defaults to demo123 when unset).'
+                'DEMO_PASSWORD must not be the placeholder <set-a-local-demo-password>. Use demo123 (see .env.example).'
             )
 
         user = User.objects.filter(username=DEMO_USER_EMAIL, email__iexact=DEMO_USER_EMAIL).order_by('id').first()

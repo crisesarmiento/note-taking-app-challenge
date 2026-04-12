@@ -233,6 +233,6 @@ def test_seed_demo_data_rejects_placeholder_password(monkeypatch):
     from django.core.management import CommandError
 
     monkeypatch.setenv('DEMO_PASSWORD', '<set-a-local-demo-password>')
-    with pytest.raises(CommandError, match='template placeholder'):
+    with pytest.raises(CommandError, match='must not be the placeholder'):
         call_command('seed_demo_data', stdout=io.StringIO())
 
