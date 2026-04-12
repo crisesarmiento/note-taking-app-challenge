@@ -1,5 +1,9 @@
 node_modules
 .next
+.cache
+test-results
+playwright-report
+blob-report
 .env.local
 .env
 npm-debug.log*

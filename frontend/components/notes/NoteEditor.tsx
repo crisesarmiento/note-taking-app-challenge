@@ -31,6 +31,7 @@ function resizeTextarea(textarea: HTMLTextAreaElement | null) {
 export function NoteEditor({ noteId }: NoteEditorProps) {
   const router = useRouter()
   const titleRef = useRef<HTMLTextAreaElement>(null)
+  const pendingTextPatchRef = useRef<Partial<Pick<Note, 'title' | 'content'>>>({})
   const [note, setNote] = useState<Note | null>(null)
   const [categories, setCategories] = useState<Category[]>([])
   const [title, setTitle] = useState('')
@@ -39,6 +40,11 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    pendingTextPatchRef.current = {}
+    setSaveStatus('idle')
+  }, [noteId])
 
   useEffect(() => {
     let isMounted = true
@@ -74,7 +80,11 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
 
   const debouncedSave = useMemo(
     () =>
-      debounce(async (patch: Partial<Pick<Note, 'title' | 'content'>>) => {
+      debounce(async () => {
+        const patch = pendingTextPatchRef.current
+        pendingTextPatchRef.current = {}
+        if (!Object.keys(patch).length) return
+
         setSaveStatus('saving')
         try {
           const response = await api.patch<Note>(`/notes/${noteId}/`, patch)
@@ -88,13 +98,17 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
   )
 
   useEffect(() => {
-    return () => debouncedSave.cancel()
+    return () => {
+      pendingTextPatchRef.current = {}
+      debouncedSave.cancel()
+    }
   }, [debouncedSave])
 
   const handleTitleChange = useCallback(
     (value: string) => {
       setTitle(value)
-      debouncedSave({ title: value })
+      pendingTextPatchRef.current = { ...pendingTextPatchRef.current, title: value }
+      debouncedSave()
     },
     [debouncedSave],
   )
@@ -102,7 +116,8 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
   const handleContentChange = useCallback(
     (value: string) => {
       setContent(value)
-      debouncedSave({ content: value })
+      pendingTextPatchRef.current = { ...pendingTextPatchRef.current, content: value }
+      debouncedSave()
     },
     [debouncedSave],
   )
@@ -176,7 +191,7 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
             <div>
               <span>Last Edited: </span>
               <span>{formatEditorDate(note.updated_at)}</span>
-              <span className={cn('ml-3', saveStatus === 'error' ? 'text-red-900' : 'text-textMeta')}>
+              <span data-testid="save-status" className={cn('ml-3', saveStatus === 'error' ? 'text-red-900' : 'text-textMeta')}>
                 {saveStatus === 'saving' ? 'Saving...' : saveStatus === 'saved' ? 'Saved' : saveStatus === 'error' ? 'Not saved' : ''}
               </span>
             </div>

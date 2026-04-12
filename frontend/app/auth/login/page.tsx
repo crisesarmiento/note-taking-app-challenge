@@ -9,6 +9,8 @@ export default function LoginPage() {
       footerText="Need an account?"
       footerHref="/auth/signup"
       footerLabel="Oops! I've never been here before"
+      imageWidth={96}
+      imageHeight={114}
       imageClassName="w-[104px]"
     >
       <AuthForm mode="login" />

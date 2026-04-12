@@ -10,15 +10,17 @@ type AuthLayoutProps = {
   footerText: string
   footerHref: string
   footerLabel: string
+  imageWidth: number
+  imageHeight: number
   imageClassName?: string
 }
 
-export function AuthLayout({ illustration, title, children, footerText, footerHref, footerLabel, imageClassName }: AuthLayoutProps) {
+export function AuthLayout({ illustration, title, children, footerText, footerHref, footerLabel, imageWidth, imageHeight, imageClassName }: AuthLayoutProps) {
   return (
     <main className="flex min-h-screen items-center justify-center bg-page px-6 py-12">
       <section className="w-full max-w-[400px] text-center">
         <div className="mb-7 flex justify-center">
-          <Image src={illustration} alt="" width={128} height={128} priority className={cn('h-auto object-contain', imageClassName)} />
+          <Image src={illustration} alt="" width={imageWidth} height={imageHeight} priority className={cn('h-auto object-contain', imageClassName)} />
         </div>
         <h1 className="mb-8 font-serif text-[2.5rem] font-bold leading-tight text-textMeta">{title}</h1>
         {children}

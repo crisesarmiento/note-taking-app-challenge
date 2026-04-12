@@ -67,6 +67,11 @@ coverage/
 *.lcov
 .nyc_output/
 
+# Playwright artifacts
+test-results/
+playwright-report/
+blob-report/
+
 # Docker / local runtime
 .docker/
 postgres_data/
