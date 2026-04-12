@@ -13,14 +13,28 @@ A warm, Figma-driven notes-taking app built for a 72-hour hiring challenge with 
 
 Docker startup automatically seeds a persistent demo account, default categories, and realistic sample notes.
 
+**Easy local demo:** `docker-compose.yml` sets `DEMO_PASSWORD` to **`demo123`** by default (via `DEMO_PASSWORD: ${DEMO_PASSWORD:-demo123}`). You do not need a `backend/.env` file for the stack to start; the backend, Playwright, and browser login all use that same value unless you override it.
+
 ```text
 DEMO_EMAIL=demo@example.com
-DEMO_PASSWORD=<set-a-local-demo-password>
+DEMO_PASSWORD=demo123   # default in Docker Compose; export a different value to override
 ```
 
-Copy `backend/.env.example` to `backend/.env` and set `DEMO_PASSWORD` locally before starting Docker. The password is intentionally loaded from `.env` instead of being committed to source control.
+For a **custom** password, export it before `docker compose up` so Compose, the container, and your shell stay aligned (the `environment` block overrides `DEMO_PASSWORD` from `backend/.env`):
+
+```bash
+export DEMO_PASSWORD='your-secret'
+docker compose up --build
+```
+
+Copy `backend/.env.example` to `backend/.env` when you need extra backend-only settings; `DEMO_PASSWORD` there must not be the template placeholder `<set-a-local-demo-password>` (the seed command rejects it).
 
 The seeded data persists across container restarts because PostgreSQL uses the `postgres_data` Docker volume. The seed command is idempotent, so restarting the backend will not duplicate demo notes.
+
+### Troubleshooting demo login
+
+- **"Invalid email or password"** in the app almost always means the password you type does not match **`DEMO_PASSWORD`** in the backend environment. With Docker, that is **`demo123`** unless you overrode it when starting Compose.
+- **`seed_demo_data` fails** on the placeholder: edit `backend/.env` (or your environment) and set a real password.
 
 ## Why These Versions
 
@@ -35,10 +49,11 @@ The seeded data persists across container restarts because PostgreSQL uses the `
 ### Docker
 
 ```bash
-cp backend/.env.example backend/.env
-# Edit backend/.env and set DEMO_PASSWORD before starting the stack.
-docker-compose up --build
+docker compose up --build
 ```
+
+Optional: `cp backend/.env.example backend/.env` if you use backend-only tools or extra env vars. For the default demo user you can rely on Compose's `demo123` password.
+
 
 Then open:
 
@@ -55,7 +70,7 @@ python -m venv venv
 source venv/bin/activate
 pip install -r requirements-dev.txt
 cp .env.example .env
-# Edit .env and set DEMO_PASSWORD before seeding demo data.
+# .env.example includes DEMO_PASSWORD=demo123 for local seeding; change if needed.
 python manage.py migrate
 python manage.py seed_demo_data
 python manage.py runserver
@@ -140,16 +155,14 @@ npm run build
 Start the Docker stack first so the backend, frontend, PostgreSQL, and seeded demo user are available:
 
 ```bash
-cp backend/.env.example backend/.env
-# Edit backend/.env and set DEMO_PASSWORD before starting the stack.
-docker-compose up --build
+docker compose up --build
 ```
 
-Export the same demo credentials for Playwright:
+Playwright defaults to the same demo password as Docker (**`demo123`**). Override only if you changed `DEMO_PASSWORD` when starting Compose:
 
 ```bash
 export DEMO_EMAIL=demo@example.com
-export DEMO_PASSWORD="$(grep '^DEMO_PASSWORD=' backend/.env | cut -d= -f2-)"
+export DEMO_PASSWORD=demo123
 ```
 
 Then run:
