@@ -1,16 +1,21 @@
 # Cozy Notes
 
-A warm, Figma-driven notes-taking app built for a 72-hour hiring challenge with Django REST Framework and Next.js.
-
-## Quick Start
+### Quick Start
 
 ```bash
 docker compose up --build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) and sign in with **demo@example.com** / **demo123**. No `.env` files or manual environment setup is required.
+Open http://localhost:3000
 
-The backend seeds the demo user, default categories, and sample notes on startup. Data persists in the `postgres_data` Docker volume between restarts.
+Demo Account
+
+Email: demo@example.com
+Password: demo123
+
+You can start using the app immediately with the demo account.
+
+A warm, Figma-driven notes-taking app built for a 72-hour hiring challenge with Django REST Framework and Next.js.
 
 ## Stack
 
