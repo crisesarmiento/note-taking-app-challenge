@@ -87,17 +87,6 @@ jobs:
       - name: Install Playwright Chromium
         working-directory: frontend
         run: PLAYWRIGHT_BROWSERS_PATH=.cache/ms-playwright npx playwright install --with-deps chromium
-      - name: Prepare demo credentials
-        run: |
-          demo_password="$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9' | head -c 24)"
-          {
-            echo "DEMO_EMAIL=demo@example.com"
-            echo "DEMO_PASSWORD=$demo_password"
-          } >> "$GITHUB_ENV"
-          {
-            echo "DEMO_EMAIL=demo@example.com"
-            echo "DEMO_PASSWORD=$demo_password"
-          } > backend/.env
       - name: Start Docker stack
         run: docker compose up -d --build
       - name: Wait for backend

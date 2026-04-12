@@ -2,25 +2,22 @@
 
 A warm, Figma-driven notes-taking app built for a 72-hour hiring challenge with Django REST Framework and Next.js.
 
+## Quick Start
+
+```bash
+docker compose up --build
+```
+
+Open [http://localhost:3000](http://localhost:3000) and sign in with **demo@example.com** / **demo123**. No `.env` files or manual environment setup is required.
+
+The backend seeds the demo user, default categories, and sample notes on startup. Data persists in the `postgres_data` Docker volume between restarts.
+
 ## Stack
 
 - Backend: Python 3.12, Django 5.2 LTS, Django REST Framework, SimpleJWT, PostgreSQL
 - Frontend: Next.js 15, TypeScript, Tailwind CSS, shadcn/ui, Playfair Display, Inter
 - Local runtime: Docker Compose
 - Workflow: `development` integration branch, `main` final/release branch, PR-based delivery, GitHub Actions CI
-
-## Demo Account
-
-Docker startup automatically seeds a persistent demo account, default categories, and realistic sample notes.
-
-```text
-DEMO_EMAIL=demo@example.com
-DEMO_PASSWORD=<set-a-local-demo-password>
-```
-
-Copy `backend/.env.example` to `backend/.env` and set `DEMO_PASSWORD` locally before starting Docker. The password is intentionally loaded from `.env` instead of being committed to source control.
-
-The seeded data persists across container restarts because PostgreSQL uses the `postgres_data` Docker volume. The seed command is idempotent, so restarting the backend will not duplicate demo notes.
 
 ## Why These Versions
 
@@ -32,22 +29,14 @@ The seeded data persists across container restarts because PostgreSQL uses the `
 
 ## Running Locally
 
-### Docker
-
-```bash
-cp backend/.env.example backend/.env
-# Edit backend/.env and set DEMO_PASSWORD before starting the stack.
-docker-compose up --build
-```
-
-Then open:
+Use **Quick Start** for the full stack. Reference URLs:
 
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8000/api
 
 The backend entrypoint runs migrations and `python manage.py seed_demo_data` on every container start.
 
-### Backend Only
+### Backend only (no Docker)
 
 ```bash
 cd backend
@@ -55,7 +44,6 @@ python -m venv venv
 source venv/bin/activate
 pip install -r requirements-dev.txt
 cp .env.example .env
-# Edit .env and set DEMO_PASSWORD before seeding demo data.
 python manage.py migrate
 python manage.py seed_demo_data
 python manage.py runserver
@@ -137,34 +125,16 @@ npm run build
 
 ### Playwright E2E Tests
 
-Start the Docker stack first so the backend, frontend, PostgreSQL, and seeded demo user are available:
-
-```bash
-cp backend/.env.example backend/.env
-# Edit backend/.env and set DEMO_PASSWORD before starting the stack.
-docker-compose up --build
-```
-
-Export the same demo credentials for Playwright:
-
-```bash
-export DEMO_EMAIL=demo@example.com
-export DEMO_PASSWORD="$(grep '^DEMO_PASSWORD=' backend/.env | cut -d= -f2-)"
-```
-
-Then run:
+With the Docker stack running (**Quick Start**), the tests use the same demo account (**demo@example.com** / **demo123**) by default.
 
 ```bash
 cd frontend
-npm test
-# or
-npx playwright test
+npm run test:e2e
 ```
 
-Useful Playwright commands:
+Other useful commands:
 
 ```bash
-npm run test:e2e
 npm run test:e2e:ui
 PLAYWRIGHT_BROWSERS_PATH=.cache/ms-playwright npx playwright install chromium
 ```

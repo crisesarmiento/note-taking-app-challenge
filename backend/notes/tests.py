@@ -227,3 +227,12 @@ def test_seed_demo_data_command_is_idempotent_and_login_works(monkeypatch):
     assert user.notes.count() == len(DEMO_NOTES) + 1
     assert 'notes_created=5' in first_output.getvalue()
     assert 'notes_created=0' in second_output.getvalue()
+
+@pytest.mark.django_db
+def test_seed_demo_data_rejects_placeholder_password(monkeypatch):
+    from django.core.management import CommandError
+
+    monkeypatch.setenv('DEMO_PASSWORD', '<set-a-local-demo-password>')
+    with pytest.raises(CommandError, match='must not be the placeholder'):
+        call_command('seed_demo_data', stdout=io.StringIO())
+

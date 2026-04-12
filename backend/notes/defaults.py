@@ -1,23 +1,41 @@
 import os
 from pathlib import Path
 
+from decouple import Config, RepositoryEnv, UndefinedValueError
 
-def _local_env_value(key):
-    env_path = Path(__file__).resolve().parent.parent / '.env'
-    if not env_path.exists():
-        return None
+BASE_DIR = Path(__file__).resolve().parent.parent
 
-    for line in env_path.read_text().splitlines():
-        if not line or line.lstrip().startswith('#') or '=' not in line:
-            continue
-        name, value = line.split('=', 1)
-        if name.strip() == key:
-            return value.strip().strip('"').strip("'")
-    return None
+# Documented placeholder in .env.example — must not be used as a real password.
+INVALID_DEMO_PASSWORD_PLACEHOLDER = '<set-a-local-demo-password>'
+
+_config: Config | None = None
+_env_path = BASE_DIR / '.env'
+if _env_path.exists():
+    _config = Config(RepositoryEnv(str(_env_path)))
 
 
 def _env_value(key, default=None):
-    return os.getenv(key) or _local_env_value(key) or default
+    v = os.getenv(key)
+    if v is not None and v.strip() != '':
+        return v.strip().strip('"').strip("'")
+    if _config is not None:
+        try:
+            out = _config.get(key)
+            if out is not None and str(out).strip() != '':
+                return str(out).strip().strip('"').strip("'")
+        except UndefinedValueError:
+            pass
+    return default
+
+
+def is_invalid_demo_password_placeholder(password):
+    if password is None:
+        return True
+    p = password.strip()
+    if not p:
+        return True
+    return p == INVALID_DEMO_PASSWORD_PLACEHOLDER or INVALID_DEMO_PASSWORD_PLACEHOLDER in p
+
 
 DEFAULT_CATEGORIES = [
     {'name': 'Random Thoughts', 'color': '#E8A87C'},

@@ -3,7 +3,13 @@ from django.core.management import CommandError
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from notes.defaults import DEFAULT_CATEGORIES, DEMO_NOTES, DEMO_USER_EMAIL, get_demo_password
+from notes.defaults import (
+    DEFAULT_CATEGORIES,
+    DEMO_NOTES,
+    DEMO_USER_EMAIL,
+    get_demo_password,
+    is_invalid_demo_password_placeholder,
+)
 from notes.models import Category, Note
 
 User = get_user_model()
@@ -16,7 +22,14 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         demo_password = get_demo_password()
         if not demo_password:
-            raise CommandError('DEMO_PASSWORD is required to seed the demo user. Copy backend/.env.example to backend/.env and set a local value.')
+            raise CommandError(
+                'DEMO_PASSWORD is required to seed the demo user. '
+                'Docker Compose sets this automatically; for backend-only runs copy backend/.env.example to backend/.env.'
+            )
+        if is_invalid_demo_password_placeholder(demo_password):
+            raise CommandError(
+                'DEMO_PASSWORD must not be the placeholder <set-a-local-demo-password>. Use demo123 (see .env.example).'
+            )
 
         user = User.objects.filter(username=DEMO_USER_EMAIL, email__iexact=DEMO_USER_EMAIL).order_by('id').first()
         if user is None:
@@ -64,6 +77,7 @@ class Command(BaseCommand):
                 'Demo data ready: '
                 f'user={"created" if user_created else "updated"}, '
                 f'categories_created={categories_created}, '
-                f'notes_created={notes_created}'
+                f'notes_created={notes_created}. '
+                f'Log in as {DEMO_USER_EMAIL} using the same DEMO_PASSWORD as in the environment.'
             )
         )
